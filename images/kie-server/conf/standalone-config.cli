@@ -1,0 +1,66 @@
+# Mark the commands below to be run as a batch
+batch
+      
+# Add H2 driver
+# /subsystem=datasources/jdbc-driver=h2:add(driver-name=h2,driver-module-name=com.h2database.h2,driver-xa-datasource-class-name=org.h2.jdbcx.JdbcDataSource)
+      
+# Add non-xa datasource for jBPM runtime DB
+data-source add --name=nonXAjBPMDS --driver-name=h2 --jndi-name=java:jboss/datasources/nonXAjBPMDS --connection-url=jdbc:h2:tcp://h2database-host/~/../opt/h2/data/jbpm-runtime-db --user-name=sa --password=sa --use-java-context=true --max-pool-size=25 --blocking-timeout-wait-millis=5000 --enabled=true
+
+# Add XA datasource for jBPM runtime DB
+xa-data-source add --name="XAjBPMDS" --jndi-name=java:jboss/datasources/XAjBPMDS --enabled=true --driver-name=h2 --user-name=sa --password=sa --xa-datasource-class=org.h2.jdbcx.JdbcDataSource --xa-datasource-properties=[{URL=jdbc:h2:tcp://h2database-host/~/../opt/h2/data/jbpm-runtime-db}]
+
+# Add EJB Timers datasource
+xa-data-source add --name="EjbTimerDS" --jndi-name=java:jboss/datasources/EjbTimerDS --enabled=true --driver-name=h2 --use-java-context=true --spy=false --use-ccm=true --tracking=false --enlistment-trace=false --statistics-enabled=true --transaction-isolation=TRANSACTION_READ_COMMITTED --user-name=sa --password=sa --xa-datasource-properties=[{URL=jdbc:h2:tcp://h2database-host/~/../opt/h2/data/jbpm-ejb-ds}]
+
+# Increase threads number
+/subsystem=io/worker=default:write-attribute(name=task-max-threads,value=150)
+
+# Create EJB Timer service
+#/subsystem=ejb3/service=timer-service:remove
+#/subsystem=ejb3/service=timer-service:add(thread-pool-name=default,default-data-store=ejb_timer_ds)
+#/subsystem=ejb3/service=timer-service/database-data-store=ejb_timer_ds:add(datasource-jndi-name=java:jboss/datasources/EjbTimerDS,database=h2,partition=ejb_timer_part,allow-execution=true, refresh-interval=30000)
+#/subsystem=ejb3/service=timer-service/file-data-store=default-file-store:add(path=timer-service-data,relative-to=jboss.server.data.dir)
+#/subsystem=ejb3:write-attribute(name="default-mdb-instance-pool", value=mdb-strict-max-pool)
+#/subsystem=ejb3:write-attribute(name="default-resource-adapter-name", value=${ejb.resource-adapter-name:activemq-ra.rar})
+/system-property=org.jbpm.ejb.timer.tx:add(value=true)
+
+# Change properties files for users and groups
+/core-service=management/security-realm=ApplicationRealm/authentication=properties:write-attribute(name=path,value=application-users.properties)
+/core-service=management/security-realm=ApplicationRealm/authorization=properties:write-attribute(name=path,value=application-roles.properties)
+
+# Clean default system properties
+#/system-property=org.jbpm.ht.admin.group:remove()
+#/system-property=org.kie.server.persistence.ds:remove()
+#/system-property=org.kie.prometheus.server.ext.disabled:remove()
+#/system-property=kie.keystore.keyStoreURL:remove()
+#/system-property=kie.keystore.keyStorePwd:remove()
+#/system-property=kie.keystore.key.server.alias:remove()
+#/system-property=kie.keystore.key.server.pwd:remove()
+#/system-property=kie.keystore.key.ctrl.alias:remove()
+#/system-property=kie.keystore.key.ctrl.pwd:remove()
+
+# Add custom system properties
+/system-property=kie.maven.settings.custom:add(value=/opt/jboss/repositories/kie/settings.xml)
+/system-property=org.kie.server.id:add(value=jbpm-development-server)
+/system-property=org.kie.server.location:add(value=http://kie-server-host:8080/kie-server/services/rest/server)
+/system-property=org.kie.server.controller:add(value=http://business-central-host:8080/business-central/rest/controller)
+/system-property=org.kie.server.controller.user:add(value=controllerUser)
+/system-property=org.kie.server.controller.pwd:add(value=password@1 )
+
+# Cambiar a false
+/system-property=org.jbpm.task.cleanup.enabled:add(value=true)
+/system-property=org.kie.prometheus.server.ext.disabled:add(value=true)
+/system-property=org.kie.server.persistence.ds:add(value=java:jboss/datasources/XAjBPMDS)
+/system-property=org.kie.server.repo:add(value=/opt/jboss/repositories/kie)
+/system-property=jbpm.overdue.timer.delay:add(value=60000)
+/system-property=org.jbpm.event.emitters.elasticsearch.url:add(value=http://elasticsearch-host:9200)
+/system-property=org.kie.executor.retry.count:add(value=0)
+/system-property=kie.server.jms.queues.response:add(value=queue/KIE.SERVER.RESPONSE)
+/system-property=org.kie.executor.jms:add(value=true)
+/system-property=org.kie.executor.jms.queue:add(value=queue/KIE.SERVER.EXECUTOR)
+/system-property=org.kie.executor.jms.transacted:add(value=false)
+/system-property=org.kie.executor.interval:add(value=10)
+
+# Execute the batch
+run-batch

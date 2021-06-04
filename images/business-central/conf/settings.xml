@@ -1,0 +1,68 @@
+<settings xmlns="http://maven.apache.org/SETTINGS/1.0.0"
+          xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+          xsi:schemaLocation="http://maven.apache.org/SETTINGS/1.0.0 http://maven.apache.org/xsd/settings-1.0.0.xsd">
+<profiles>
+  <profile>
+    <id>jboss</id>
+        <repositories>
+			<repository>
+              <id>red hat</id>
+              <url>https://maven.repository.redhat.com/ga/</url>
+              <releases>
+                <enabled>true</enabled>
+                <updatePolicy>never</updatePolicy>
+              </releases>
+              <snapshots>
+                <enabled>true</enabled>
+		<updatePolicy>never</updatePolicy>
+              </snapshots>
+            </repository>
+
+            <repository>
+              <id>jboss</id>
+              <url>https://repository.jboss.org/</url>
+              <releases>
+                <enabled>true</enabled>
+                <updatePolicy>never</updatePolicy>
+              </releases>
+              <snapshots>
+                <enabled>true</enabled>
+		<updatePolicy>never</updatePolicy>
+              </snapshots>
+            </repository>
+			
+			
+         </repositories>
+         <pluginRepositories>
+           <pluginRepository>
+               <id>red hat</id>
+               <url>https://maven.repository.redhat.com/ga/</url>
+              <releases>
+                <enabled>true</enabled>
+                <updatePolicy>never</updatePolicy>
+              </releases>
+              <snapshots>
+                <enabled>true</enabled>
+                <updatePolicy>never</updatePolicy>
+              </snapshots>
+           </pluginRepository>
+            <pluginRepository>
+               <id>jboss</id>
+               <url>https://repository.jboss.org/</url>
+              <releases>
+                <enabled>true</enabled>
+                <updatePolicy>never</updatePolicy>
+              </releases>
+              <snapshots>
+                <enabled>true</enabled>
+                <updatePolicy>never</updatePolicy>
+              </snapshots>
+
+           </pluginRepository>
+          </pluginRepositories>
+      </profile>
+        </profiles>
+<activeProfiles>
+  <activeProfile>jboss</activeProfile>
+</activeProfiles>
+</settings>

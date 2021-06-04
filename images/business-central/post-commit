@@ -1,0 +1,23 @@
+#!/bin/bash
+MESSAGE=$(git log -1 HEAD --pretty=format:%s)
+LOGDIR=/opt/jboss/repositories/git/post-commit.log
+COMMIT=$(git log -1 HEAD --pretty=tformat:'Commit: %h' )
+AUTHOR=$(git log -1 HEAD --pretty=tformat:'Author: %an' )
+DATE=$(git log -1 HEAD --pretty=tformat:'Date: %ad' )
+COMMENT=$(git log -1 HEAD --pretty=tformat:'Comment: %s%n' )
+COMMITINFO=$(git log -1 HEAD --pretty=tformat:'Commit: %h Author: %an%n Date: %ad%n Comment: %s%n' )
+REPO=$PWD
+
+echo "" >> $LOGDIR
+echo "----------------------------------------------------" >> $LOGDIR
+echo "REPO: $REPO" >> $LOGDIR
+echo $COMMIT >> $LOGDIR
+echo $AUTHOR >> $LOGDIR
+echo $DATE >> $LOGDIR
+echo $COMMENT >> $LOGDIR
+
+if [[ "$MESSAGE" == \[push\]* ]]; then
+        git push --all origin 2>>$LOGDIR
+fi
+
+echo "----------------------------------------------------" >> $LOGDIR

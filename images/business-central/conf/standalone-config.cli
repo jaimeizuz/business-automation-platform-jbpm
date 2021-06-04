@@ -1,0 +1,32 @@
+# Mark the commands below to be run as a batch
+batch
+      
+# Change properties files for users and groups
+/core-service=management/security-realm=ApplicationRealm/authentication=properties:write-attribute(name=path,value=application-users.properties)
+/core-service=management/security-realm=ApplicationRealm/authorization=properties:write-attribute(name=path,value=application-roles.properties)
+
+# Kie login module for kie-server interactions
+/subsystem=security/security-domain=other/authentication=classic/login-module=org.kie.security.jaas.KieLoginModule:add(code=org.kie.security.jaas.KieLoginModule,module=deployment.business-central.war, flag=optional)
+
+# Clean default system properties
+#/system-property=kie.keystore.keyStoreURL:remove()
+#/system-property=kie.keystore.keyStorePwd:remove()
+#/system-property=kie.keystore.key.server.alias:remove()
+#/system-property=kie.keystore.key.server.pwd:remove()
+#/system-property=kie.keystore.key.ctrl.alias:remove()
+#/system-property=kie.keystore.key.ctrl.pwd:remove()
+
+# Add custom system properties
+/system-property=kie.maven.settings.custom:add(value=/opt/jboss/repositories/maven/settings.xml)
+/system-property=org.kie.server.user:add(value=controllerUser)
+/system-property=org.kie.server.pwd:add(value=password@1)
+/system-property=org.uberfire.nio.git.dir:add(value=/opt/jboss/repositories/git)
+/system-property=org.uberfire.metadata.index.dir:add(value=/opt/jboss/repositories/git)
+/system-property=org.guvnor.m2repo.dir:add(value=/opt/jboss/repositories/maven)
+/system-property=org.kie.server.repo:add(value=/opt/jboss/repositories/kie)
+/system-property=org.uberfire.nio.git.hooks:add(value=/opt/jboss/git-hooks)
+/system-property=org.kie.build.disable-project-explorer:add(value=true)
+/system-property=org.kie.controller.ping.alive.disable:add(value=true)
+
+# Execute the batch
+run-batch
