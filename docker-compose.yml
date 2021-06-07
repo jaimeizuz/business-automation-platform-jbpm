@@ -15,6 +15,8 @@ volumes:
     driver: local
   elasticsearch_data:
     driver: local
+  apromore_data:
+    driver: local
 
 services:
   business-central:
@@ -57,6 +59,16 @@ services:
     depends_on:
     - kie-server
     mem_limit: 768m
+  jbpm-xes-exporter:
+    hostname: jbpm-xes-exporter-host
+    image: jizuzquiza/jbpm-xes-exporter:1.0
+    environment:
+      database_driver: org.h2.Driver
+      database_url: jdbc:h2:tcp://h2database-host/~/../opt/h2/data/jbpm-runtime-db
+      database_user: sa
+      database_password: sa
+    ports:
+    - 8089:8089
   elasticsearch:
     hostname: elasticsearch-host
     image: docker.elastic.co/elasticsearch/elasticsearch:7.13.1
@@ -77,3 +89,31 @@ services:
     depends_on:
     - elasticsearch
     mem_limit: 1200m
+  apromore:
+    hostname: apromore-host
+    image: apromore/community:7.15
+    environment:
+        JAVA_OPTS: "-server -Xmx8g -Xmn1g"
+    volumes:
+    - ./images/process-mining/site.properties:/opt/apromore/virgo-tomcat-server-3.6.4.RELEASE/repository/usr/site.properties
+    - apromore_data:/opt/apromore/Event-Logs-Repository
+    ports:
+    - "8084:9000"
+    depends_on:
+    - h2database
+    - apromore-database
+    restart: always
+  apromore-database:
+    hostname: apromore-database-host
+    image: mysql:5.7
+    command: --max_allowed_packet=2G
+    environment:
+      MYSQL_DATABASE: apromore
+      MYSQL_ROOT_PASSWORD: MAcri
+      MYSQL_USER: apromore
+      MYSQL_PASSWORD: MAcri
+    volumes:
+    - "./images/process-mining/mysql-data:/var/lib/mysql" 
+    ports:
+     - 3306:3306
+    restart: always
