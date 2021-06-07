@@ -102,6 +102,7 @@ services:
     depends_on:
     - h2database
     - apromore-database
+    mem_limit: 4096m
     restart: always
   apromore-database:
     hostname: apromore-database-host
@@ -116,4 +117,5 @@ services:
     - "./images/process-mining/mysql-data:/var/lib/mysql" 
     ports:
      - 3306:3306
+    mem_limit: 768m
     restart: always
