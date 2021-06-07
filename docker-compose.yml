@@ -15,7 +15,11 @@ volumes:
     driver: local
   elasticsearch_data:
     driver: local
-  apromore_data:
+  apromore_config:
+    driver: local
+  apromore_events:
+    driver: local
+  apromore_database:
     driver: local
 
 services:
@@ -89,16 +93,16 @@ services:
     depends_on:
     - elasticsearch
     mem_limit: 1200m
-  apromore:
-    hostname: apromore-host
-    image: apromore/community:7.15
+  apromore-app:
+    hostname: apromore-app-host
+    image: jizuzquiza/apromore-app:1.0
     environment:
         JAVA_OPTS: "-server -Xmx8g -Xmn1g"
     volumes:
-    - ./images/process-mining/site.properties:/opt/apromore/virgo-tomcat-server-3.6.4.RELEASE/repository/usr/site.properties
-    - apromore_data:/opt/apromore/Event-Logs-Repository
+    - apromore_config:/opt/apromore/virgo-tomcat-server-3.6.4.RELEASE/repository/usr
+    - apromore_events:/opt/apromore/Event-Logs-Repository
     ports:
-    - "8084:9000"
+    - 8084:9000
     depends_on:
     - h2database
     - apromore-database
@@ -106,7 +110,7 @@ services:
     restart: always
   apromore-database:
     hostname: apromore-database-host
-    image: mysql:5.7
+    image: jizuzquiza/apromore-database:1.0
     command: --max_allowed_packet=2G
     environment:
       MYSQL_DATABASE: apromore
@@ -114,7 +118,7 @@ services:
       MYSQL_USER: apromore
       MYSQL_PASSWORD: MAcri
     volumes:
-    - "./images/process-mining/mysql-data:/var/lib/mysql" 
+    - apromore_database:/var/lib/mysql
     ports:
      - 3306:3306
     mem_limit: 768m
