@@ -17,7 +17,7 @@ http://localhost:8081/business-central/kie-wb.jsp?locale=en_EN
 Database with persistent storage, useful for kie-server and process-instance-migration services.
 
 **How to access**
-http://localhost:8082/login.jsp (using web browser)
+http://localhost:8082/login.jsp (using web browser)\
 jBPM runtime schema, jBPM EJB timers schema and jBPM process instance migration schema datasources configurations are pre-loaded by default. 
 
 ## Kie-server (jBPM)
@@ -70,9 +70,12 @@ http://localhost:8084/login.zul
 
 ## Appromore-database
 Supports appromore application. No need to access it directly.
+\
+
+
 
 # Profiles
-Although you combine services the way you want, a set of default profiles are provided:
+Although you can combine services the way you want, a set of default profiles are provided:
 
 **Starts the full stack (kie-server single node)** Requires over 14GB of free RAM
 
