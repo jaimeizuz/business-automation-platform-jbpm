@@ -16,7 +16,7 @@ echo "=> Waiting for the server to boot"
 wait_for_server
 
 echo "=> Executing the commands"
-$JBOSS_CLI -c --file=`dirname "$0"`/standalone-config.cli
+$JBOSS_CLI -c --properties=`dirname "$0"`/standalone-config.property --file=`dirname "$0"`/standalone-config.cli
 
 echo "=> Shutting down WildFly"
 if [ "$JBOSS_MODE" = "standalone" ]; then

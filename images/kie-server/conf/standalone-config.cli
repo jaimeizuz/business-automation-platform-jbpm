@@ -1,5 +1,9 @@
 # Mark the commands below to be run as a batch
 batch
+
+# Some properties to replace env variables
+/subsystem=ee:write-attribute(name=jboss-descriptor-property-replacement,value=true)
+/subsystem=ee:write-attribute(name=spec-descriptor-property-replacement,value=true)
       
 # Add H2 driver
 # /subsystem=datasources/jdbc-driver=h2:add(driver-name=h2,driver-module-name=com.h2database.h2,driver-xa-datasource-class-name=org.h2.jdbcx.JdbcDataSource)
@@ -12,9 +16,6 @@ xa-data-source add --name="XAjBPMDS" --jndi-name=java:jboss/datasources/XAjBPMDS
 
 # Add EJB Timers datasource
 xa-data-source add --name="EjbTimerDS" --jndi-name=java:jboss/datasources/EjbTimerDS --enabled=true --driver-name=h2 --use-java-context=true --spy=false --use-ccm=true --tracking=false --enlistment-trace=false --statistics-enabled=true --transaction-isolation=TRANSACTION_READ_COMMITTED --user-name=sa --password=sa --xa-datasource-properties=[{URL=jdbc:h2:tcp://h2database-host/~/../opt/h2/data/jbpm-ejb-ds}]
-
-# Increase threads number
-/subsystem=io/worker=default:write-attribute(name=task-max-threads,value=150)
 
 # Create EJB Timer service
 #/subsystem=ejb3/service=timer-service:remove
@@ -42,25 +43,15 @@ xa-data-source add --name="EjbTimerDS" --jndi-name=java:jboss/datasources/EjbTim
 
 # Add custom system properties
 /system-property=kie.maven.settings.custom:add(value=/opt/jboss/repositories/kie/settings.xml)
-/system-property=org.kie.server.id:add(value=jbpm-development-server)
-/system-property=org.kie.server.location:add(value=http://kie-server-host:8080/kie-server/services/rest/server)
-/system-property=org.kie.server.controller:add(value=http://business-central-host:8080/business-central/rest/controller)
-/system-property=org.kie.server.controller.user:add(value=controllerUser)
-/system-property=org.kie.server.controller.pwd:add(value=password@1 )
 
 # Cambiar a false
-/system-property=org.jbpm.task.cleanup.enabled:add(value=true)
-/system-property=org.kie.prometheus.server.ext.disabled:add(value=true)
 /system-property=org.kie.server.persistence.ds:add(value=java:jboss/datasources/XAjBPMDS)
 /system-property=org.kie.server.repo:add(value=/opt/jboss/repositories/kie)
 /system-property=jbpm.overdue.timer.delay:add(value=60000)
-/system-property=org.jbpm.event.emitters.elasticsearch.url:add(value=http://elasticsearch-host:9200)
-/system-property=org.kie.executor.retry.count:add(value=0)
 /system-property=kie.server.jms.queues.response:add(value=queue/KIE.SERVER.RESPONSE)
 /system-property=org.kie.executor.jms:add(value=true)
 /system-property=org.kie.executor.jms.queue:add(value=queue/KIE.SERVER.EXECUTOR)
 /system-property=org.kie.executor.jms.transacted:add(value=false)
-/system-property=org.kie.executor.interval:add(value=10)
 
 # Execute the batch
 run-batch
