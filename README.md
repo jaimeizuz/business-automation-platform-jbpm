@@ -107,6 +107,10 @@ Although you can combine services the way you want, a set of default profiles ar
 
     docker-compose --profile process-monitoring up
 \
+**Starts the runtime stack (designer, kie-server single node, h2 database) + elasticsearch events**
+
+    docker-compose --profile runtime-with-events up
+ \
 **Starts the process-monitoring stack (elasticsearch, kibana) + runtime stack**
 
     docker-compose --profile runtime --profile process-monitoring up
