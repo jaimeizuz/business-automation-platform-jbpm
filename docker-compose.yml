@@ -97,7 +97,7 @@ services:
     ports:
     - 8090:8090
     depends_on:
-    - kie-server
+    - kie-server-1
     mem_limit: 768m
   jbpm-xes-exporter:
     hostname: jbpm-xes-exporter-host
@@ -150,10 +150,10 @@ services:
     image: jizuzquiza/apromore-database:1.0
     command: --max_allowed_packet=2G
     environment:
-    - MYSQL_DATABASE: apromore
-    - MYSQL_ROOT_PASSWORD: MAcri
-    - MYSQL_USER: apromore
-    - MYSQL_PASSWORD: MAcri
+      MYSQL_DATABASE: apromore
+      MYSQL_ROOT_PASSWORD: MAcri
+      MYSQL_USER: apromore
+      MYSQL_PASSWORD: MAcri
     volumes:
     - apromore_database:/var/lib/mysql
     ports:
