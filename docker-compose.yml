@@ -51,7 +51,8 @@ services:
         -Dorg.kie.server.id=jbpm-development-server
         -Dorg.kie.server.location=http://kie-server-host-1:8080/kie-server/services/rest/server
         -Dorg.kie.server.controller=http://business-central-host:8080/business-central/rest/controller
-        -Dorg.kie.server.controller.user=controllerUser -Dorg.kie.server.controller.pwd=password@1
+        -Dorg.kie.server.controller.user=controllerUser
+        -Dorg.kie.server.controller.pwd=password@1
         -Dorg.jbpm.task.cleanup.enabled=true
         -Dorg.kie.prometheus.server.ext.disabled=true
         -Dorg.jbpm.event.emitters.elasticsearch.url=http://elasticsearch-host:9200
@@ -75,7 +76,8 @@ services:
         -Dorg.kie.server.id=jbpm-development-server
         -Dorg.kie.server.location=http://kie-server-host-2:8080/kie-server/services/rest/server
         -Dorg.kie.server.controller=http://business-central-host:8080/business-central/rest/controller
-        -Dorg.kie.server.controller.user=controllerUser -Dorg.kie.server.controller.pwd=password@1
+        -Dorg.kie.server.controller.user=controllerUser
+        -Dorg.kie.server.controller.pwd=password@1
         -Dorg.jbpm.task.cleanup.enabled=true
         -Dorg.kie.prometheus.server.ext.disabled=true
         -Dorg.jbpm.event.emitters.elasticsearch.url=http://elasticsearch-host:9200
