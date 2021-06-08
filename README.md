@@ -1,6 +1,8 @@
 
 Docker-compose.yml that allows you to start a fully orchestred business automation platform with a single command.
 
+Requeriments: docker 1.19+, docker-compose 1.26+ (1.28.0+ for using profiles).
+
 # Services
 
 ## Business-Central (jBPM)
@@ -75,7 +77,7 @@ Supports appromore application. No need to access it directly.
 
 
 # Profiles
-Although you can combine services the way you want, a set of default profiles are provided:
+Although you can combine services the way you want, a set of default profiles are provided (docker-compose 1.28.0 or later is required. Otherwise, just comment services you don't want to start and exec "docker-compose up"):
 
 **Starts the full stack (kie-server single node)** Requires over 14GB of free RAM
 
