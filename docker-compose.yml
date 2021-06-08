@@ -58,39 +58,38 @@ services:
         -Dorg.jbpm.event.emitters.elasticsearch.url=http://elasticsearch-host:9200
         -Dorg.kie.executor.retry.count=0
         -Dorg.kie.executor.interval=10
-      JAVA_OPTS: -Xms1280m -Xmx1280m -XX:MetaspaceSize=512m -XX:MaxMetaspaceSize=512m -Djava.net.preferIPv4Stack=true -agentlib:jdwp=transport=dt_socket,address=8787,server=y,suspend=n
+      JAVA_OPTS: -Xms1024m -Xmx1024m -XX:MetaspaceSize=256m -XX:MaxMetaspaceSize=368m -Djava.net.preferIPv4Stack=true -agentlib:jdwp=transport=dt_socket,address=8787,server=y,suspend=n
     ports:
     - 8080:8080
     - 8085:8087
     depends_on:
     - h2database
-    mem_limit: 2100m
-  kie-server-2:
-    hostname: kie-server-host-2
-    image: jizuzquiza/kie-server:1.0
-    environment:
-      BC_MAVEN_REPO_USER: jbpmAdmin
-      BC_MAVEN_REPO_PASSWORD: password@1
-      BC_MAVEN_REPO: http://business-central-host:8080/business-central/maven2
-      EXTRA_OPTS: >
-        -Dorg.kie.server.id=jbpm-development-server
-        -Dorg.kie.server.location=http://kie-server-host-2:8080/kie-server/services/rest/server
-        -Dorg.kie.server.controller=http://business-central-host:8080/business-central/rest/controller
-        -Dorg.kie.server.controller.user=controllerUser
-        -Dorg.kie.server.controller.pwd=password@1
-        -Dorg.jbpm.task.cleanup.enabled=true
-        -Dorg.kie.prometheus.server.ext.disabled=true
-        -Dorg.jbpm.event.emitters.elasticsearch.url=http://elasticsearch-host:9200
-        -Dorg.kie.executor.retry.count=0
-        -Dorg.kie.executor.interval=10
-      JAVA_OPTS: -Xms1300m -Xmx1300m -XX:MetaspaceSize=512m -XX:MaxMetaspaceSize=512m -Djava.net.preferIPv4Stack=true -agentlib:jdwp=transport=dt_socket,address=8787,server=y,suspend=n
-    ports:
-    - 8086:8080
-    - 8087:8087
-    depends_on:
-    - h2database
-    - business-central
-    mem_limit: 2100m
+    mem_limit: 1800m
+  # kie-server-2:
+  #   hostname: kie-server-host-2
+  #   image: jizuzquiza/kie-server:1.0
+  #   environment:
+  #     BC_MAVEN_REPO_USER: jbpmAdmin
+  #     BC_MAVEN_REPO_PASSWORD: password@1
+  #     BC_MAVEN_REPO: http://business-central-host:8080/business-central/maven2
+  #     EXTRA_OPTS: >
+  #       -Dorg.kie.server.id=jbpm-development-server
+  #       -Dorg.kie.server.location=http://kie-server-host-2:8080/kie-server/services/rest/server
+  #       -Dorg.kie.server.controller=http://business-central-host:8080/business-central/rest/controller
+  #       -Dorg.kie.server.controller.user=controllerUser
+  #       -Dorg.kie.server.controller.pwd=password@1
+  #       -Dorg.jbpm.task.cleanup.enabled=true
+  #       -Dorg.kie.prometheus.server.ext.disabled=true
+  #       -Dorg.jbpm.event.emitters.elasticsearch.url=http://elasticsearch-host:9200
+  #       -Dorg.kie.executor.retry.count=0
+  #       -Dorg.kie.executor.interval=10
+  #     JAVA_OPTS: -Xms1024m -Xmx1024m -XX:MetaspaceSize=256m -XX:MaxMetaspaceSize=368m -Djava.net.preferIPv4Stack=true -agentlib:jdwp=transport=dt_socket,address=8787,server=y,suspend=n
+  #   ports:
+  #   - 8086:8080
+  #   - 8087:8087
+  #   depends_on:
+  #   - h2database
+  #   mem_limit: 1800m
   jbpm-process-instance-migration:
     hostname: jbpm-process-instance-migration-host
     image: jizuzquiza/jbpm-process-instance-migration:1.0
