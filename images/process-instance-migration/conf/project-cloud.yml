@@ -49,7 +49,7 @@ thorntail:
                 defaultUsersProperties: file:///opt/jboss/pim/application-users.properties
                 defaultRolesProperties: file:///opt/jboss/pim/application-roles.properties
 kieservers:
-  - host: http://kie-server-host:8080/kie-server/services/rest/server
+  - host: http://kie-server-host-1:8080/kie-server/services/rest/server
     username: jbpmAdmin
     password: password@1
 
