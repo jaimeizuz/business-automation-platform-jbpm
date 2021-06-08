@@ -1,0 +1,17 @@
+server:
+    port: 8089
+    servlet:
+        context-path: /services/rest
+    tomcat:
+        max-threads: ${MAX_THREADS:2000}
+
+
+
+spring: 
+    main:
+        banner-mode: "off"     
+
+logging: 
+    level: 
+        org: 
+            springframework: INFO
