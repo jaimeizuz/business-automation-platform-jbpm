@@ -154,7 +154,6 @@ services:
     - h2database
     - apromore-database
     mem_limit: 4096m
-    restart: always
   apromore-database:
     hostname: apromore-database-host
     image: jizuzquiza/apromore-database:1.0
@@ -170,4 +169,3 @@ services:
     ports:
      - 3306:3306
     mem_limit: 768m
-    restart: always
