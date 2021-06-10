@@ -13,6 +13,8 @@ volumes:
     driver: local
   kie-server_mvn:
     driver: local
+  kafka_data:
+    driver: local
   elasticsearch_data:
     driver: local
   apromore_config:
@@ -61,6 +63,10 @@ services:
         -Dorg.jbpm.event.emitters.elasticsearch.url=http://elasticsearch-host:9200
         -Dorg.kie.executor.retry.count=0
         -Dorg.kie.executor.interval=10
+        -Dorg.kie.kafka.server.ext.disabled=false
+        -Dorg.kie.server.jbpm-kafka.ext.bootstrap.servers=kafka-host:9092
+        -Dorg.kie.server.jbpm-kafka.ext.client.id=kie-server-kafka-client-1
+        -Dorg.kie.server.jbpm-kafka.ext.group.id=business-automation-platform-kie-server-consumer-1
       JAVA_OPTS: -Xms1024m -Xmx1024m -XX:MetaspaceSize=256m -XX:MaxMetaspaceSize=368m -Djava.net.preferIPv4Stack=true -agentlib:jdwp=transport=dt_socket,address=8787,server=y,suspend=n
     ports:
     - 8080:8080
@@ -87,6 +93,10 @@ services:
         -Dorg.jbpm.event.emitters.elasticsearch.url=http://elasticsearch-host:9200
         -Dorg.kie.executor.retry.count=0
         -Dorg.kie.executor.interval=10
+        -Dorg.kie.kafka.server.ext.disabled=false
+        -Dorg.kie.server.jbpm-kafka.ext.bootstrap.servers=kafka-host:9092
+        -Dorg.kie.server.jbpm-kafka.ext.client.id=kie-server-kafka-client-2
+        -Dorg.kie.server.jbpm-kafka.ext.group.id=business-automation-platform-kie-server-consumer-2
       JAVA_OPTS: -Xms1024m -Xmx1024m -XX:MetaspaceSize=256m -XX:MaxMetaspaceSize=368m -Djava.net.preferIPv4Stack=true -agentlib:jdwp=transport=dt_socket,address=8787,server=y,suspend=n
     ports:
     - 8086:8080
@@ -94,6 +104,28 @@ services:
     depends_on:
     - h2database
     mem_limit: 1800m
+  zookeeper:
+    hostname: zookeeper-host
+    image: wurstmeister/zookeeper
+    profiles: ["runtime-with-events","runtime-cluster","all"]
+    ports:
+    - 2181:2181
+    mem_limit: 400m
+  kafka:
+    hostname: kafka-host
+    image: wurstmeister/kafka
+    profiles: ["runtime","runtime-with-events","runtime-cluster","all"]
+    ports:
+    - 9092:9092
+    - 29092:29092
+    environment:
+      KAFKA_ADVERTISED_HOST_NAME: kafka-host
+      KAFKA_ADVERTISED_PORT: 9092
+      KAFKA_ZOOKEEPER_CONNECT: zookeeper-host:2181
+    volumes:
+    - /var/run/docker.sock:/var/run/docker.sock
+    - kafka_data:/kafka
+    mem_limit: 768m
   jbpm-process-instance-migration:
     hostname: jbpm-process-instance-migration-host
     image: jizuzquiza/jbpm-process-instance-migration:1.0
