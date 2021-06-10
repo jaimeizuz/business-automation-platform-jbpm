@@ -24,14 +24,13 @@ jBPM runtime schema, jBPM EJB timers schema and jBPM process instance migration 
 
 ## Kie-server (jBPM)
 Allows you to create and engine (or cluster of a number of engines by defining more than one copy of the service) to deploy and execute BPMN/DMN kjars. kie system properties are configurable by modifying "EXTRA_OPTS" env variable in docker-compose.yml file.
-By default, this service relies on H2 database service for both runtime and EJB timers.
+By default, this service relies on H2 database service for both runtime and EJB timers. Elasticsearch events are sent by default to elasticsearch service. It also has event-driven capabilities through BPMN messages/signals using kafka service (see https://docs.jboss.org/jbpm/release/latestFinal/jbpm-docs/html_single/#message-receive-event-proc_kie-apis and https://docs.jboss.org/jbpm/release/latestFinal/jbpm-docs/html_single/#message-send-event-proc_kie-apis)
 
 **How to access**
 http://localhost:8080/kie-server/docs/
 
     User: jbpmAdmin
     Password: password@1
-
 
 ## Process-instance-migration (jBPM)
 Allows you to migrate process instances from a specific version to a newer one through a web app with an easy-to-use UI. It needs to be connected to a kie-server and it needs h2 database service to be up and running.
@@ -47,6 +46,9 @@ Allows you to get event logs from a specific processId in XES format for further
 
 **How to access**
 http://localhost:8089/services/rest/jbpm-xes-exporter/process-model/{processId}
+
+## Kafka
+Kafka service that supports Event-driven services
 
 ## Elasticsearch
 It supports jBPM elasticsearch event emmiter by storing events fired in kie-server processes and tasks executions with two default indices: "processes" and "tasks".
