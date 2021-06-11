@@ -17,6 +17,8 @@ volumes:
     driver: local
   elasticsearch_data:
     driver: local
+  mockserver_expectations:
+    driver: local
   apromore_config:
     driver: local
   apromore_events:
@@ -128,8 +130,8 @@ services:
     mem_limit: 768m
   kafdrop:
     hostname: kafdrop-host
-    profiles: ["runtime-with-events"]
     image: obsidiandynamics/kafdrop
+    profiles: ["runtime-with-events","all"]
     depends_on:
       - kafka
     ports:
@@ -139,13 +141,19 @@ services:
       JVM_OPTS: "-Xms32M -Xmx64M"
       SERVER_SERVLET_CONTEXTPATH: "/"
     mem_limit: 150m
-  dmn-event-driven-kogito-example:
-    hostname: dmn-event-driven-kogito-example-host
-    image: jizuzquiza/dmn-event-driven-kogito:1.0
-    profiles: ["runtime-with-events"]
-    ports: 
-    - 8094:8080
-    mem_limit: 100m
+  mockserver:
+    hostname: mockserver-host
+    profiles: ["runtime","runtime-with-events","runtime-cluster","all"]
+    image: mockserver/mockserver:mockserver-5.11.1
+    ports:
+      - 1080:1080
+    environment:
+      MOCKSERVER_INITIALIZATION_JSON_PATH: /config/expectations.json
+    volumes:
+    - type: bind
+      source: "."
+      target: "/config"
+    mem_limit: 200m
   jbpm-process-instance-migration:
     hostname: jbpm-process-instance-migration-host
     image: jizuzquiza/jbpm-process-instance-migration:1.0

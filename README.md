@@ -32,6 +32,12 @@ http://localhost:8080/kie-server/docs/
     User: jbpmAdmin
     Password: password@1
 
+## Mockserver
+Allows to create mock services by creating a file called expectations.json with the expected format (see https://www.mock-server.com/mock_server/initializing_expectations.html)
+
+**How to access**
+http://localhost:1080/<your-created-mock-service>
+
 ## Process-instance-migration (jBPM)
 Allows you to migrate process instances from a specific version to a newer one through a web app with an easy-to-use UI. It needs to be connected to a kie-server and it needs h2 database service to be up and running.
 
