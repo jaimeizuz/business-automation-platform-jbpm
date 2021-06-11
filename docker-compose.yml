@@ -106,14 +106,14 @@ services:
     mem_limit: 1800m
   zookeeper:
     hostname: zookeeper-host
-    image: wurstmeister/zookeeper
+    image: wurstmeister/zookeeper:3.4.6
     profiles: ["runtime-with-events","runtime-cluster","all"]
     ports:
     - 2181:2181
     mem_limit: 400m
   kafka:
     hostname: kafka-host
-    image: wurstmeister/kafka
+    image: wurstmeister/kafka:2.12-2.2.1
     profiles: ["runtime","runtime-with-events","runtime-cluster","all"]
     ports:
     - 9092:9092
@@ -126,6 +126,26 @@ services:
     - /var/run/docker.sock:/var/run/docker.sock
     - kafka_data:/kafka
     mem_limit: 768m
+  kafdrop:
+    hostname: kafdrop-host
+    profiles: ["runtime-with-events"]
+    image: obsidiandynamics/kafdrop
+    depends_on:
+      - kafka
+    ports:
+      - 9000:9000
+    environment:
+      KAFKA_BROKERCONNECT: "kafka-host:9092"
+      JVM_OPTS: "-Xms32M -Xmx64M"
+      SERVER_SERVLET_CONTEXTPATH: "/"
+    mem_limit: 150m
+  dmn-event-driven-kogito-example:
+    hostname: dmn-event-driven-kogito-example-host
+    image: jizuzquiza/dmn-event-driven-kogito:1.0
+    profiles: ["runtime-with-events"]
+    ports: 
+    - 8094:8080
+    mem_limit: 100m
   jbpm-process-instance-migration:
     hostname: jbpm-process-instance-migration-host
     image: jizuzquiza/jbpm-process-instance-migration:1.0
