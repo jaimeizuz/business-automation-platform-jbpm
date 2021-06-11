@@ -33,7 +33,7 @@ http://localhost:8080/kie-server/docs/
     Password: password@1
 
 ## Mockserver
-Allows to create mock services by creating a file called expectations.json with the expected format (see https://www.mock-server.com/mock_server/initializing_expectations.html)
+Allows to create mock services by creating a file called expectations.json in the same directory where docker-compose.yml is located with the expected format (see https://www.mock-server.com/mock_server/initializing_expectations.html)
 
 **How to access**
 http://localhost:1080/<your-created-mock-service>
