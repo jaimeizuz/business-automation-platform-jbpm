@@ -50,6 +50,12 @@ http://localhost:8089/services/rest/jbpm-xes-exporter/process-model/{processId}
 ## Kafka
 Kafka service that supports Event-driven services
 
+## Kafdrop
+Allows to monitor messages in topics with kafdrop UI
+
+**How to access**
+http://localhost:9000
+
 ## Elasticsearch
 It supports jBPM elasticsearch event emmiter by storing events fired in kie-server processes and tasks executions with two default indices: "processes" and "tasks".
 
