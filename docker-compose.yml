@@ -29,7 +29,7 @@ volumes:
 services:
   business-central:
     hostname: business-central-host
-    image: jizuzquiza/business-central:1.0
+    image: jizuzquiza/business-central:1.0-7.56.0.Final
     profiles: ["designer","runtime","runtime-with-events","runtime-cluster","process-instance-migration","all"]
     volumes:
       - business-central_repositories:/opt/jboss/repositories
@@ -48,7 +48,7 @@ services:
     mem_limit: 400m
   kie-server-1:
     hostname: kie-server-host-1
-    image: jizuzquiza/kie-server:1.0
+    image: jizuzquiza/kie-server:1.0-7.56.0.Final
     profiles: ["runtime","runtime-with-events","runtime-cluster","process-instance-migration","all"]
     environment:
       BC_MAVEN_REPO_USER: jbpmAdmin
@@ -69,16 +69,19 @@ services:
         -Dorg.kie.server.jbpm-kafka.ext.bootstrap.servers=kafka-host:9092
         -Dorg.kie.server.jbpm-kafka.ext.client.id=kie-server-kafka-client-1
         -Dorg.kie.server.jbpm-kafka.ext.group.id=business-automation-platform-kie-server-consumer-1
-      JAVA_OPTS: -Xms1024m -Xmx1024m -XX:MetaspaceSize=256m -XX:MaxMetaspaceSize=368m -Djava.net.preferIPv4Stack=true -agentlib:jdwp=transport=dt_socket,address=8787,server=y,suspend=n
+        -Dorg.kie.dmn.runtime.listeners.mylistener=com.business.platform.drools.dmn.event.listener.ElasticsearchDmnEventListener
+#       -Dorg.kie.server.bypass.auth.user=true
+        -DAPP_COUNTRY=local
+      JAVA_OPTS: -Xms1024m -Xmx1024m -XX:MetaspaceSize=256m -XX:MaxMetaspaceSize=368m -Djava.net.preferIPv4Stack=true
     ports:
     - 8080:8080
-    - 8085:8087
+    - 8787:8787
     depends_on:
     - h2database
     mem_limit: 1800m
   kie-server-2:
     hostname: kie-server-host-2
-    image: jizuzquiza/kie-server:1.0
+    image: jizuzquiza/kie-server:1.0-7.56.0.Final
     profiles: ["runtime-cluster"]
     environment:
       BC_MAVEN_REPO_USER: jbpmAdmin
@@ -109,7 +112,7 @@ services:
   zookeeper:
     hostname: zookeeper-host
     image: wurstmeister/zookeeper:3.4.6
-    profiles: ["runtime-with-events","runtime-cluster","all"]
+    profiles: ["runtime","runtime-with-events","runtime-cluster","all"]
     ports:
     - 2181:2181
     mem_limit: 400m
@@ -127,6 +130,8 @@ services:
     volumes:
     - /var/run/docker.sock:/var/run/docker.sock
     - kafka_data:/kafka
+    depends_on:
+    - zookeeper
     mem_limit: 768m
   kafdrop:
     hostname: kafdrop-host
@@ -156,10 +161,10 @@ services:
     mem_limit: 200m
   jbpm-process-instance-migration:
     hostname: jbpm-process-instance-migration-host
-    image: jizuzquiza/jbpm-process-instance-migration:1.0
+    image: jizuzquiza/jbpm-process-instance-migration:1.0-7.56.0.Final
     profiles: ["process-instance-migration","all"]
     environment:
-      KIE_VERSION: 7.54.0.Final
+      KIE_VERSION: 7.56.0.Final
     ports:
     - 8090:8090
     depends_on:
