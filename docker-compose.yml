@@ -148,7 +148,7 @@ services:
     mem_limit: 150m
   mockserver:
     hostname: mockserver-host
-    profiles: ["runtime","runtime-with-events","runtime-cluster","all"]
+    profiles: ["mockserver","all"]
     image: mockserver/mockserver:mockserver-5.11.1
     ports:
       - 1080:1080
@@ -159,6 +159,13 @@ services:
       source: "."
       target: "/config"
     mem_limit: 200m
+  castlemock:
+    hostname: castlemock-host
+    profiles: ["castlemock","all"]
+    image: castlemock/castlemock:1.55
+    ports:
+      - 1082:8080
+    mem_limit: 1000m
   jbpm-process-instance-migration:
     hostname: jbpm-process-instance-migration-host
     image: jizuzquiza/jbpm-process-instance-migration:1.0-7.56.0.Final
