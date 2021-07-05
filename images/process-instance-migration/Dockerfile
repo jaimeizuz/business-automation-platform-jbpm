@@ -1,6 +1,6 @@
 FROM openjdk:8-jre-alpine
 
-ENV KIE_VERSION=7.54.0.Final
+ENV KIE_VERSION=7.56.0.Final
 
 RUN mkdir -p /opt/jboss/pim \
 	&& wget https://repository.jboss.org/nexus/content/repositories/public-jboss/org/drools/process-migration-service/${KIE_VERSION}/process-migration-service-${KIE_VERSION}-thorntail.jar -P /opt/jboss/pim \

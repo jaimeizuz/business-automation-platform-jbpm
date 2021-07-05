@@ -1,4 +1,4 @@
-FROM jboss/kie-server:latest
+FROM jboss/kie-server:7.56.0.Final
 
 COPY ./conf/configure-standalone.sh $JBOSS_HOME
 COPY ./conf/standalone-config.cli $JBOSS_HOME
@@ -26,7 +26,7 @@ RUN touch $JBOSS_HOME/standalone/deployments/kie-server.war.dodeploy \
 	&& rm -rf $JBOSS_HOME/standalone/data \
 	&& sed 's/-c standalone-full.xml/-c standalone-full.xml $EXTRA_OPTS/' -i start_kie-wb.sh \
 	&& sed 's/-c standalone-full.xml/-bmanagement 0.0.0.0 -c standalone-full.xml/' -i start_kie-wb.sh \
-	&& curl https://repository.jboss.org/org/jbpm/jbpm-event-emitters-elasticsearch/7.54.0.Final/jbpm-event-emitters-elasticsearch-7.54.0.Final.jar -o $JBOSS_HOME/standalone/deployments/kie-server.war/WEB-INF/lib/jbpm-event-emitters-elasticsearch-7.54.0.Final.jar
+	&& curl https://repository.jboss.org/org/jbpm/jbpm-event-emitters-elasticsearch/7.56.0.Final/jbpm-event-emitters-elasticsearch-7.56.0.Final.jar -o $JBOSS_HOME/standalone/deployments/kie-server.war/WEB-INF/lib/jbpm-event-emitters-elasticsearch-7.56.0.Final.jar
 
 COPY ./libs/ether-bpmaas-designer-kie-container-lifecycle-listener-0.0.1.jar $JBOSS_HOME/standalone/deployments/kie-server.war/WEB-INF/lib
 COPY ./conf/settings.xml /opt/jboss/repositories/kie
