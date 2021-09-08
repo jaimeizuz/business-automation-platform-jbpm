@@ -60,7 +60,7 @@ services:
         -Dorg.kie.server.controller=http://business-central-host:8080/business-central/rest/controller
         -Dorg.kie.server.controller.user=controllerUser
         -Dorg.kie.server.controller.pwd=password@1
-        -Dorg.jbpm.task.cleanup.enabled=true
+        -Dorg.jbpm.task.cleanup.enabled=false
         -Dorg.kie.prometheus.server.ext.disabled=true
         -Dorg.jbpm.event.emitters.elasticsearch.url=http://elasticsearch-host:9200
         -Dorg.kie.executor.retry.count=0
@@ -71,7 +71,6 @@ services:
         -Dorg.kie.server.jbpm-kafka.ext.group.id=business-automation-platform-kie-server-consumer-1
         -Dorg.kie.dmn.runtime.listeners.mylistener=com.business.platform.drools.dmn.event.listener.ElasticsearchDmnEventListener
 #       -Dorg.kie.server.bypass.auth.user=true
-        -DAPP_COUNTRY=local
       JAVA_OPTS: -Xms1024m -Xmx1024m -XX:MetaspaceSize=256m -XX:MaxMetaspaceSize=368m -Djava.net.preferIPv4Stack=true
     ports:
     - 8080:8080
@@ -123,10 +122,14 @@ services:
     ports:
     - 9092:9092
     - 29092:29092
+    expose:
+    - "9093"
     environment:
-      KAFKA_ADVERTISED_HOST_NAME: kafka-host
-      KAFKA_ADVERTISED_PORT: 9092
-      KAFKA_ZOOKEEPER_CONNECT: zookeeper-host:2181
+      KAFKA_ADVERTISED_LISTENERS: INSIDE://kafka:9093,OUTSIDE://localhost:9092
+      KAFKA_LISTENER_SECURITY_PROTOCOL_MAP: INSIDE:PLAINTEXT,OUTSIDE:PLAINTEXT
+      KAFKA_LISTENERS: INSIDE://0.0.0.0:9093,OUTSIDE://0.0.0.0:9092
+      KAFKA_ZOOKEEPER_CONNECT: zookeeper:2181
+      KAFKA_INTER_BROKER_LISTENER_NAME: INSIDE
     volumes:
     - /var/run/docker.sock:/var/run/docker.sock
     - kafka_data:/kafka
@@ -142,7 +145,7 @@ services:
     ports:
       - 9000:9000
     environment:
-      KAFKA_BROKERCONNECT: "kafka-host:9092"
+      KAFKA_BROKERCONNECT: "kafka:9093"
       JVM_OPTS: "-Xms32M -Xmx64M"
       SERVER_SERVLET_CONTEXTPATH: "/"
     mem_limit: 150m
