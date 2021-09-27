@@ -1,4 +1,4 @@
-FROM jboss/business-central-workbench:7.57.0.Final
+FROM jboss/business-central-workbench:7.59.0.Final
 
 COPY ./conf/configure-standalone.sh $JBOSS_HOME
 COPY ./conf/standalone-config.cli $JBOSS_HOME

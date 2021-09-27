@@ -1,5 +1,6 @@
 package com.business.platform.drools.dmn.event.listener;
 
+import java.io.File;
 import java.io.IOException;
 import java.text.SimpleDateFormat;
 import java.util.Calendar;
@@ -69,6 +70,9 @@ public class ElasticsearchDmnEventListener implements DMNRuntimeEventListener, F
 		mapper.configure(SerializationFeature.WRITE_DATES_AS_TIMESTAMPS, false);
 		mapper.configure(MapperFeature.PROPAGATE_TRANSIENT_MARKER, true);
 		httpclient = buildClient();
+		
+		
+		File file = new File("R:\\aa\\aa");
 	}
 
 	@Override

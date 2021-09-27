@@ -15,7 +15,7 @@
 	<name>jbpm-process-xes-exporter</name>
 	<properties>
 		<java.version>8</java.version>
-		<runtime.version>7.54.0.Final</runtime.version>
+		<runtime.version>7.59.0.Final</runtime.version>
 		<maven.compiler.source>8</maven.compiler.source>
 		<maven.compiler.target>8</maven.compiler.target>
 	</properties>
