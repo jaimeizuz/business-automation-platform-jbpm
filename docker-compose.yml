@@ -174,7 +174,7 @@ services:
     image: jizuzquiza/jbpm-process-instance-migration:1.0-7.59.0.Final
     profiles: ["process-instance-migration","all"]
     environment:
-      KIE_VERSION: 7.57.0.Final
+      KIE_VERSION: 7.59.0.Final
     ports:
     - 8090:8090
     depends_on:
@@ -191,7 +191,7 @@ services:
       database_password: sa
     ports:
     - 8089:8089
-    mem_limit: 900m
+    mem_limit: 1500m
   elasticsearch:
     hostname: elasticsearch-host
     image: docker.elastic.co/elasticsearch/elasticsearch:7.15.0
