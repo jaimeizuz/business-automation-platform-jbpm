@@ -194,7 +194,7 @@ services:
     mem_limit: 900m
   elasticsearch:
     hostname: elasticsearch-host
-    image: docker.elastic.co/elasticsearch/elasticsearch:7.13.1
+    image: docker.elastic.co/elasticsearch/elasticsearch:7.15.0
     profiles: ["runtime-with-events","process-monitoring","all"]
     volumes:
     - elasticsearch_data:/usr/share/elasticsearch/data:rw
@@ -207,7 +207,7 @@ services:
     mem_limit: 2200m
   kibana:
     hostname: kibana-host
-    image: docker.elastic.co/kibana/kibana:7.13.1
+    image: docker.elastic.co/kibana/kibana:7.15.0
     profiles: ["dashboard-authoring","process-monitoring","all"]
     ports:
     - 5601:5601
