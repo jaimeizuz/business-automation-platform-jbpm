@@ -19,33 +19,123 @@ volumes:
     driver: local
   mockserver_expectations:
     driver: local
-  apromore_config:
-    driver: local
-  apromore_events:
-    driver: local
-  apromore_database:
+  db-data:
+  event-log-data:
+  sandbox-documents:
     driver: local
 
+
 services:
+  cris-jaime-novios:
+    hostname: cris-jaime-novios-host
+    profiles: ["runtime","all","sandbox"]
+    image: jizuzquiza/cris-jaime-novios:1.3.0
+    ports:
+    - 8007:8080
+  sqlserver:
+    hostname: sqlserver-host
+    profiles: ["sandbox","runtime"]
+    image: mcr.microsoft.com/mssql/server:2019-CU15-ubuntu-20.04
+    volumes:
+      - /home/jaime/projects/sqlserver:/var/opt/mssql
+    environment:
+      ACCEPT_EULA: Y
+      SA_PASSWORD: password@1
+    ports:
+    - 1433:1433
+    mem_limit: 4096m
+  sandbox-process-actions:
+    hostname: sandbox-process-actions-host
+    profiles: ["runtime","all","sandbox"]
+    # image: jizuzquiza/sandbox-process-actions:1.6.1-SNAPSHOT
+    image: jizuzquiza/sandbox-process-actions:1.13.0-SNAPSHOT
+    environment:
+      quarkus.rest-client.jbpm-url.url: http://kie-server-host-1:8080/kie-server/services/rest/server
+      quarkus.datasource.db-kind: mssql
+      quarkus.datasource.username: sa
+      quarkus.datasource.password: password@1
+      quarkus.datasource.jdbc.url: jdbc:sqlserver://sqlserver-host:1433;DatabaseName=sandbox
+#    volumes:
+#      - sandbox-documents:/deployments/quarkus/Uploads
+    ports:
+      - 10800:8080
+    mem_limit: 300m
+    depends_on:
+      - sqlserver
+  sandbox-services:
+    hostname: sandbox-services-host
+    profiles: ["runtime","all","sandbox"]
+    image: jizuzquiza/sandbox-services:1.13.0-SNAPSHOT
+    environment:
+      quarkus.datasource.db-kind: mssql
+      quarkus.datasource.username: sa
+      quarkus.datasource.password: password@1
+      quarkus.datasource.jdbc.url: jdbc:sqlserver://sqlserver-host:1433;DatabaseName=sandbox
+    ports:
+      - 10801:10801
+    mem_limit: 300m
+    depends_on:
+      - sqlserver
   business-central:
     hostname: business-central-host
     image: jizuzquiza/business-central:1.0-7.59.0.Final
-    profiles: ["designer","runtime","runtime-with-events","runtime-cluster","process-instance-migration","all"]
+    profiles: ["designer","runtime","runtime-with-events","runtime-cluster","process-instance-migration","all","sandbox"]
     volumes:
       - business-central_repositories:/opt/jboss/repositories
     ports:
-    - 8081:8080
+    - 11081:8080
     - 8001:8001
     mem_limit: 2500m
   h2database:
     hostname: h2database-host
     image: jizuzquiza/h2database:1.0
-    profiles: ["runtime","runtime-with-events","runtime-cluster","process-instance-migration","all"]
+    profiles: ["runtime","runtime-with-events","runtime-cluster","process-instance-migration","all","sandbox"]
     volumes:
     - h2database_data:/opt/h2/data
     ports:
     - 8082:8082
     mem_limit: 400m
+  sandbox-process-engine:
+    hostname: kie-server-host-1
+    image: jizuzquiza/sandbox-process-engine:1.1.3-SNAPSHOT
+    profiles: ["sandbox"]
+    environment:
+      BC_MAVEN_REPO_USER: jbpmAdmin
+      BC_MAVEN_REPO_PASSWORD: password@1
+      BC_MAVEN_REPO: http://business-central-monitoring-host:8080/business-central/maven2
+      EXTRA_OPTS: >
+        -Dorg.kie.server.id=jbpm-development-server
+        -Dorg.kie.server.location=http://kie-server-host-1:8080/kie-server/services/rest/server
+        -Dorg.kie.server.controller=http://business-central-host:8080/business-central/rest/controller
+        -Dorg.kie.server.controller.user=controllerUser
+        -Dorg.kie.server.controller.pwd=password@1
+        -Dorg.jbpm.task.cleanup.enabled=false
+        -Dorg.kie.prometheus.server.ext.disabled=true
+        -Dorg.kie.executor.retry.count=0
+        -Dorg.kie.executor.interval=10
+        -Dorg.jbpm.event.emitters.elasticsearch.url=http://elasticsearch-host:9200
+        -Dorg.jbpm.ht.callback=custom
+        -Dorg.jbpm.ht.custom.callback=es.mineco.sgtfi.bpms.usergroup.callback.SandboxFinancieroUserGroupCallback
+        -Des.mineco.sgtfi.sandbox.usergroup.host=http://sandbox-services-host:10801
+        -Des.mineco.sgtfi.sandbox.usergroup.users.path=/usuarios
+        -Des.mineco.sgtfi.sandbox.usergroup.groups.path=/roles
+        -Des.mineco.sgtfi.sandbox.usergroup.user.groups.path=/usuarios
+        -Des.mineco.sgtfi.sandbox.usergroup.personas.path=/personas
+        -Des.mineco.sgtfi.sandbox.autoridades.host=https://business-automation-platform.eu.ngrok.io
+        -Des.mineco.sgtfi.sandbox.usergroup.autoridades.path=/autoridades
+        -Des.mineco.sgtfi.sandbox.usergroup.autoridades.user=VALIDADOR
+        -Des.mineco.sgtfi.sandbox.usergroup.autoridades.password=VALIDADOR
+        -Des.mineco.sgtfi.sandbox.usergroup.organoconsultivo.id=5
+        -Dorg.jbpm.ht.admin.user=sandboxAdministrator
+        -Dorg.jbpm.ht.admin.group=sandboxAdministrators
+        -Dorg.kie.server.bypass.auth.user=true
+      JAVA_OPTS: -Xms1024m -Xmx1024m -XX:MetaspaceSize=256m -XX:MaxMetaspaceSize=368m -Djava.net.preferIPv4Stack=true
+    ports:
+    - 8080:8080
+    - 8787:8787
+    depends_on:
+    - h2database
+    mem_limit: 1800m
   kie-server-1:
     hostname: kie-server-host-1
     image: jizuzquiza/kie-server:1.1-7.59.0.Final
@@ -135,7 +225,7 @@ services:
     - kafka_data:/kafka
     depends_on:
     - zookeeper
-    mem_limit: 768m
+    mem_limit: 1024m
   kafdrop:
     hostname: kafdrop-host
     image: obsidiandynamics/kafdrop
@@ -148,7 +238,7 @@ services:
       KAFKA_BROKERCONNECT: "kafka:9093"
       JVM_OPTS: "-Xms32M -Xmx64M"
       SERVER_SERVLET_CONTEXTPATH: "/"
-    mem_limit: 150m
+    mem_limit: 300m
   mockserver:
     hostname: mockserver-host
     profiles: ["mockserver","all"]
@@ -179,7 +269,7 @@ services:
     - 8090:8090
     depends_on:
     - kie-server-1
-    mem_limit: 768m
+    mem_limit: 1500m
   jbpm-xes-exporter:
     hostname: jbpm-xes-exporter-host
     image: jizuzquiza/jbpm-xes-exporter:1.0-7.59.0.Final
@@ -194,8 +284,8 @@ services:
     mem_limit: 1500m
   elasticsearch:
     hostname: elasticsearch-host
-    image: docker.elastic.co/elasticsearch/elasticsearch:7.15.0
-    profiles: ["runtime-with-events","process-monitoring","all"]
+    image: docker.elastic.co/elasticsearch/elasticsearch:7.17.6
+    profiles: ["runtime-with-events","process-monitoring","elk","all"]
     volumes:
     - elasticsearch_data:/usr/share/elasticsearch/data:rw
     environment:
@@ -205,42 +295,56 @@ services:
     - 9200:9200
     - 9300:9300
     mem_limit: 2200m
+  logstash:
+    hostname: logstash-host
+    image: docker.elastic.co/logstash/logstash:7.17.6
+    profiles: ["runtime-with-events","process-monitoring-logstash","elk","all"]
+    environment:
+      monitoring.elasticsearch.hosts: http://elasticsearch-host:9200
+    ports:
+    - 9600:9600
+    mem_limit: 2200m
   kibana:
     hostname: kibana-host
-    image: docker.elastic.co/kibana/kibana:7.15.0
-    profiles: ["dashboard-authoring","process-monitoring","all"]
+    image: docker.elastic.co/kibana/kibana:7.17.6
+    profiles: ["dashboard-authoring","process-monitoring","elk","all"]
+    environment:
+      ELASTICSEARCH_HOSTS: '["http://elasticsearch-host:9200"]'
+    volumes:
+      - ./kibana.yml:/usr/share/kibana/config/kibana.yml
     ports:
     - 5601:5601
     depends_on:
     - elasticsearch
-    mem_limit: 1200m
-  apromore-app:
-    hostname: apromore-app-host
-    image: jizuzquiza/apromore-app:1.0
+    mem_limit: 2048m
+  apromore-ee:
+    image: apromore/opensource:8.1
     profiles: ["process-mining","all"]
     environment:
-      JAVA_OPTS: "-server -Xmx8g -Xmn1g"
+      JAVA_OPTS: "-server -Xmx20g -Xmn1g"
     volumes:
-    - apromore_config:/opt/apromore/virgo-tomcat-server-3.6.4.RELEASE/repository/usr
-    - apromore_events:/opt/apromore/Event-Logs-Repository
-    ports:
-    - 8084:9000
-    depends_on:
-    - h2database
-    - apromore-database
+      - event-log-data:/home/ubuntu/.apromore/Event-Logs-Repository/log
+      - ./config/site.cfg:/opt/apache-karaf/etc/site.cfg
     mem_limit: 4096m
-  apromore-database:
-    hostname: apromore-database-host
-    image: jizuzquiza/apromore-database:1.0
+    ports:
+      - 11080:8181
+    depends_on:
+      apromore-sql:
+       condition: service_healthy
+  apromore-sql:
+    image: mysql:8
     profiles: ["process-mining","all"]
     command: --max_allowed_packet=2G
     environment:
       MYSQL_DATABASE: apromore
       MYSQL_ROOT_PASSWORD: MAcri
-      MYSQL_USER: apromore
-      MYSQL_PASSWORD: MAcri
     volumes:
-    - apromore_database:/var/lib/mysql
+      - ./config/init.sql:/docker-entrypoint-initdb.d/init.sql
+      - db-data:/var/lib/mysql
     ports:
-     - 3306:3306
-    mem_limit: 768m
+      - 3306:3306
+    mem_limit: 1200m
+    healthcheck:
+      test: ["CMD", "mysqladmin" ,"ping", "-h", "localhost"]
+      timeout: 20s
+      retries: 10

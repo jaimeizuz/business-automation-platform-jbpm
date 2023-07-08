@@ -1,0 +1,40 @@
+FROM quay.io/kiegroup/kie-server:7.61.0.Final
+
+COPY ./conf/configure-standalone.sh $JBOSS_HOME
+COPY ./conf/standalone-config.cli $JBOSS_HOME
+COPY ./conf/standalone-config.property $JBOSS_HOME
+
+RUN mv $JBOSS_HOME/standalone/deployments/kie-server.war.dodeploy $JBOSS_HOME/standalone/deployments/kie-server.war.undeploy \
+        && mkdir -p /opt/jboss/repositories/kie\
+        && mkdir -p /opt/jboss/data
+
+USER root
+
+RUN chmod 755 $JBOSS_HOME/configure-standalone.sh \
+        && chown jboss:jboss $JBOSS_HOME/configure-standalone.sh \
+	&& chown jboss:jboss $JBOSS_HOME/standalone-config.property
+
+USER jboss
+
+RUN touch $JBOSS_HOME/standalone/deployments/kie-server.war.dodeploy \
+        && $JBOSS_HOME/bin/add-user.sh -a -u controllerUser -p password@1 -g kie-server,rest-all \
+        && $JBOSS_HOME/bin/add-user.sh -a -u jbpmAdmin -p password@1 -g admin,kie-server,rest-all \
+	&& $JBOSS_HOME/bin/add-user.sh admin password@1 \
+	&& sed -i "s/<resolve-parameter-values>false<\/resolve-parameter-values>/<resolve-parameter-values>true<\/resolve-parameter-values>/" $JBOSS_HOME/bin/jboss-cli.xml \
+	&& $JBOSS_HOME/configure-standalone.sh standalone standalone-full.xml \ 
+	&& rm -rf $JBOSS_HOME/standalone/tmp \
+	&& rm -rf $JBOSS_HOME/standalone/data \
+	&& sed 's/-c standalone-full.xml/-c standalone-full.xml $EXTRA_OPTS/' -i start_kie-wb.sh \
+	&& sed 's/-c standalone-full.xml/-bmanagement 0.0.0.0 -c standalone-full.xml/' -i start_kie-wb.sh \
+	&& curl https://repository.jboss.org/org/jbpm/jbpm-event-emitters-elasticsearch/7.61.0.Final/jbpm-event-emitters-elasticsearch-7.61.0.Final.jar -o $JBOSS_HOME/standalone/deployments/kie-server.war/WEB-INF/lib/jbpm-event-emitters-elasticsearch-7.61.0.Final.jar
+
+COPY ./libs/* $JBOSS_HOME/standalone/deployments/kie-server.war/WEB-INF/lib/
+COPY ./conf/settings.xml /opt/jboss/repositories/kie
+
+# ENV JAVA_EXTRA_OPTS="-Xms1280m -Xmx1280m -XX:MetaspaceSize=512m -XX:MaxMetaspaceSize=512m -Djava.net.preferIPv4Stack=true -agentlib:jdwp=transport=dt_socket,address=8787,server=y,suspend=n"
+
+ENV JAVA_OPTS="$JAVA_OPTS"
+
+####### RUNNING JBPM-WB ############
+WORKDIR $JBOSS_HOME/bin/
+CMD ["./start_kie-wb.sh"]

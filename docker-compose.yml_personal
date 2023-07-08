@@ -1,0 +1,304 @@
+version: '2'
+
+volumes:
+  business-central_repositories:
+    driver: local
+  business-central_controller:
+    driver: local
+  business-central_userdata:
+    driver: local
+  h2database_data:
+    driver: local
+  kie-server_userdata:
+    driver: local
+  kie-server_mvn:
+    driver: local
+  kafka_data:
+    driver: local
+  elasticsearch_data:
+    driver: local
+  mockserver_expectations:
+    driver: local
+  db-data:
+  event-log-data:
+  sandbox-documents:
+    driver: local
+
+
+services:
+  cris-jaime-novios:
+    hostname: cris-jaime-novios-host
+    profiles: ["runtime","all","sandbox"]
+    image: jizuzquiza/cris-jaime-novios:1.3.0
+    ports:
+    - 8007:8080
+  sqlserver:
+    hostname: sqlserver-host
+    profiles: ["sandbox","runtime"]
+    image: mcr.microsoft.com/mssql/server:2019-CU15-ubuntu-20.04
+    volumes:
+      - /home/jaime/projects/sqlserver:/var/opt/mssql
+    environment:
+      ACCEPT_EULA: Y
+      SA_PASSWORD: password@1
+    ports:
+    - 1433:1433
+    mem_limit: 4096m
+  sandbox-process-actions:
+    hostname: sandbox-process-actions-host
+    profiles: ["runtime","all","sandbox"]
+    image: jizuzquiza/sandbox-process-actions:1.6.1-SNAPSHOT
+    environment:
+      quarkus.rest-client.jbpm-url.url: http://kie-server-host-1:8080/kie-server/services/rest/server
+      quarkus.datasource.db-kind: mssql
+      quarkus.datasource.username: sa
+      quarkus.datasource.password: password@1
+      quarkus.datasource.jdbc.url: jdbc:sqlserver://sqlserver-host:1433;DatabaseName=sandbox
+#    volumes:
+#      - sandbox-documents:/deployments/quarkus/Uploads
+    ports:
+      - 10800:8080
+    mem_limit: 300m
+    depends_on:
+      - sqlserver
+  sandbox-services:
+    hostname: sandbox-services-host
+    profiles: ["runtime","all","sandbox"]
+    image: jizuzquiza/sandbox-services:1.6.0-SNAPSHOT
+    environment:
+      quarkus.datasource.db-kind: mssql
+      quarkus.datasource.username: sa
+      quarkus.datasource.password: password@1
+      quarkus.datasource.jdbc.url: jdbc:sqlserver://sqlserver-host:1433;DatabaseName=sandbox
+    ports:
+      - 10801:10801
+    mem_limit: 300m
+    depends_on:
+      - sqlserver
+  business-central:
+    hostname: business-central-host
+    image: jizuzquiza/business-central:1.0-7.59.0.Final
+    profiles: ["designer","runtime","runtime-with-events","runtime-cluster","process-instance-migration","all","sandbox"]
+    volumes:
+      - business-central_repositories:/opt/jboss/repositories
+    ports:
+    - 12081:8080
+    - 12001:8001
+    mem_limit: 2500m
+  h2database:
+    hostname: h2database-host
+    image: jizuzquiza/h2database:1.0
+    profiles: ["runtime","runtime-with-events","runtime-cluster","process-instance-migration","all","sandbox"]
+    volumes:
+    - h2database_data:/opt/h2/data
+    ports:
+    - 8082:8082
+    mem_limit: 400m
+  kie-server-1:
+    hostname: kie-server-host-1
+    image: jizuzquiza/kie-server:1.1-7.59.0.Final
+    profiles: ["runtime","runtime-with-events","runtime-cluster","process-instance-migration","all","sandbox"]
+    environment:
+      BC_MAVEN_REPO_USER: jbpmAdmin
+      BC_MAVEN_REPO_PASSWORD: password@1
+      BC_MAVEN_REPO: http://business-central-host:8080/business-central/maven2
+      EXTRA_OPTS: > 
+        -Dorg.kie.server.id=jbpm-development-server
+        -Dorg.kie.server.location=http://kie-server-host-1:8080/kie-server/services/rest/server
+        -Dorg.kie.server.controller=http://business-central-host:8080/business-central/rest/controller
+        -Dorg.kie.server.controller.user=controllerUser
+        -Dorg.kie.server.controller.pwd=password@1
+        -Dorg.jbpm.task.cleanup.enabled=false
+        -Dorg.kie.prometheus.server.ext.disabled=true
+        -Dorg.jbpm.event.emitters.elasticsearch.url=http://elasticsearch-host:9200
+        -Dorg.kie.executor.retry.count=0
+        -Dorg.kie.executor.interval=10
+        -Dorg.kie.kafka.server.ext.disabled=false
+        -Dorg.kie.server.jbpm-kafka.ext.bootstrap.servers=kafka-host:9093
+        -Dorg.kie.server.jbpm-kafka.ext.client.id=kie-server-kafka-client-1
+        -Dorg.kie.server.jbpm-kafka.ext.group.id=business-automation-platform-kie-server-consumer-1
+        -Dorg.kie.dmn.runtime.listeners.mylistener=com.business.platform.drools.dmn.event.listener.ElasticsearchDmnEventListener
+#       -Dorg.kie.server.bypass.auth.user=true
+      JAVA_OPTS: -Xms1024m -Xmx1024m -XX:MetaspaceSize=256m -XX:MaxMetaspaceSize=368m -Djava.net.preferIPv4Stack=true
+    ports:
+    - 8080:8080
+    - 8787:8787
+    depends_on:
+    - h2database
+    mem_limit: 1800m
+  kie-server-2:
+    hostname: kie-server-host-2
+    image: jizuzquiza/kie-server:1.1-7.59.0.Final
+    profiles: ["runtime-cluster"]
+    environment:
+      BC_MAVEN_REPO_USER: jbpmAdmin
+      BC_MAVEN_REPO_PASSWORD: password@1
+      BC_MAVEN_REPO: http://business-central-host:8080/business-central/maven2
+      EXTRA_OPTS: >
+        -Dorg.kie.server.id=jbpm-development-server
+        -Dorg.kie.server.location=http://kie-server-host-2:8080/kie-server/services/rest/server
+        -Dorg.kie.server.controller=http://business-central-host:8080/business-central/rest/controller
+        -Dorg.kie.server.controller.user=controllerUser
+        -Dorg.kie.server.controller.pwd=password@1
+        -Dorg.jbpm.task.cleanup.enabled=true
+        -Dorg.kie.prometheus.server.ext.disabled=true
+        -Dorg.jbpm.event.emitters.elasticsearch.url=http://elasticsearch-host:9200
+        -Dorg.kie.executor.retry.count=0
+        -Dorg.kie.executor.interval=10
+        -Dorg.kie.kafka.server.ext.disabled=false
+        -Dorg.kie.server.jbpm-kafka.ext.bootstrap.servers=kafka-host:9093
+        -Dorg.kie.server.jbpm-kafka.ext.client.id=kie-server-kafka-client-2
+        -Dorg.kie.server.jbpm-kafka.ext.group.id=business-automation-platform-kie-server-consumer-2
+      JAVA_OPTS: -Xms1024m -Xmx1024m -XX:MetaspaceSize=256m -XX:MaxMetaspaceSize=368m -Djava.net.preferIPv4Stack=true -agentlib:jdwp=transport=dt_socket,address=8787,server=y,suspend=n
+    ports:
+    - 8086:8080
+    - 8087:8087
+    depends_on:
+    - h2database
+    mem_limit: 1800m
+  zookeeper:
+    hostname: zookeeper-host
+    image: wurstmeister/zookeeper:3.4.6
+    profiles: ["runtime","runtime-with-events","runtime-cluster","all"]
+    ports:
+    - 2181:2181
+    mem_limit: 400m
+  kafka:
+    hostname: kafka-host
+    image: wurstmeister/kafka:2.12-2.2.1
+    profiles: ["runtime","runtime-with-events","runtime-cluster","all"]
+    ports:
+    - 9092:9092
+    - 29092:29092
+    expose:
+    - "9093"
+    environment:
+      KAFKA_ADVERTISED_LISTENERS: INSIDE://kafka-host:9093,OUTSIDE://localhost:9092
+      KAFKA_LISTENER_SECURITY_PROTOCOL_MAP: INSIDE:PLAINTEXT,OUTSIDE:PLAINTEXT
+      KAFKA_LISTENERS: INSIDE://0.0.0.0:9093,OUTSIDE://0.0.0.0:9092
+      KAFKA_ZOOKEEPER_CONNECT: zookeeper:2181
+      KAFKA_INTER_BROKER_LISTENER_NAME: INSIDE
+    volumes:
+    - /var/run/docker.sock:/var/run/docker.sock
+    - kafka_data:/kafka
+    depends_on:
+    - zookeeper
+    mem_limit: 1024m
+  kafdrop:
+    hostname: kafdrop-host
+    image: obsidiandynamics/kafdrop
+    profiles: ["runtime-with-events","all"]
+    depends_on:
+      - kafka
+    ports:
+      - 9000:9000
+    environment:
+      KAFKA_BROKERCONNECT: "kafka:9093"
+      JVM_OPTS: "-Xms32M -Xmx64M"
+      SERVER_SERVLET_CONTEXTPATH: "/"
+    mem_limit: 300m
+  mockserver:
+    hostname: mockserver-host
+    profiles: ["mockserver","all"]
+    image: mockserver/mockserver:mockserver-5.11.1
+    ports:
+      - 1080:1080
+    environment:
+      MOCKSERVER_INITIALIZATION_JSON_PATH: /config/expectations.json
+    volumes:
+    - type: bind
+      source: "."
+      target: "/config"
+    mem_limit: 200m
+  castlemock:
+    hostname: castlemock-host
+    profiles: ["castlemock","all"]
+    image: castlemock/castlemock:1.55
+    ports:
+      - 1082:8080
+    mem_limit: 1000m
+  jbpm-process-instance-migration:
+    hostname: jbpm-process-instance-migration-host
+    image: jizuzquiza/jbpm-process-instance-migration:1.0-7.59.0.Final
+    profiles: ["process-instance-migration","all"]
+    environment:
+      KIE_VERSION: 7.59.0.Final
+    ports:
+    - 8090:8090
+    depends_on:
+    - kie-server-1
+    mem_limit: 1500m
+  jbpm-xes-exporter:
+    hostname: jbpm-xes-exporter-host
+    image: jizuzquiza/jbpm-xes-exporter:1.0-7.59.0.Final
+    profiles: ["process-mining","all"]
+    environment:
+      database_driver: org.h2.Driver
+      database_url: jdbc:h2:tcp://h2database-host/~/../opt/h2/data/jbpm-runtime-db
+      database_user: sa
+      database_password: sa
+    ports:
+    - 8089:8089
+    mem_limit: 1500m
+  elasticsearch:
+    hostname: elasticsearch-host
+    image: docker.elastic.co/elasticsearch/elasticsearch:7.15.0
+    profiles: ["runtime-with-events","process-monitoring","all"]
+    volumes:
+    - elasticsearch_data:/usr/share/elasticsearch/data:rw
+    environment:
+      discovery.type: "single-node"
+      xpack.security.enabled: "false"
+    ports:
+    - 9200:9200
+    - 9300:9300
+    mem_limit: 2200m
+  logstash:
+    hostname: logstash-host
+    image: docker.elastic.co/logstash/logstash:7.15.0
+    profiles: ["runtime-with-events","process-monitoring","all"]
+    environment:
+      monitoring.elasticsearch.hosts: http://elasticsearch-host:9200
+    ports:
+    - 9600:9600
+    mem_limit: 2200m
+  kibana:
+    hostname: kibana-host
+    image: docker.elastic.co/kibana/kibana:7.15.0
+    profiles: ["dashboard-authoring","process-monitoring","all"]
+    ports:
+    - 5601:5601
+    depends_on:
+    - elasticsearch
+    mem_limit: 1200m
+  apromore-ee:
+    image: apromore/opensource:7.21
+    profiles: ["process-mining","all"]
+    environment:
+      JAVA_OPTS: "-server -Xmx20g -Xmn1g"
+    volumes:
+      - event-log-data:/home/ubuntu/.apromore/Event-Logs-Repository/log
+      - ./config/site.cfg:/opt/apache-karaf/etc/site.cfg
+    mem_limit: 4096m
+    ports:
+      - 11080:8181
+    depends_on:
+      apromore-sql:
+       condition: service_healthy
+  apromore-sql:
+    image: mysql:8
+    profiles: ["process-mining","all"]
+    command: --max_allowed_packet=2G
+    environment:
+      MYSQL_DATABASE: apromore
+      MYSQL_ROOT_PASSWORD: MAcri
+    volumes:
+      - ./config/init.sql:/docker-entrypoint-initdb.d/init.sql
+      - db-data:/var/lib/mysql
+    ports:
+      - 3306:3306
+    mem_limit: 1200m
+    healthcheck:
+      test: ["CMD", "mysqladmin" ,"ping", "-h", "localhost"]
+      timeout: 20s
+      retries: 10

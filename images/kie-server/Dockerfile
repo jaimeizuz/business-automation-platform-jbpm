@@ -1,4 +1,4 @@
-FROM jboss/kie-server:7.59.0.Final
+FROM quay.io/kiegroup/kie-server:7.73.0.Final
 
 COPY ./conf/configure-standalone.sh $JBOSS_HOME
 COPY ./conf/standalone-config.cli $JBOSS_HOME
@@ -25,8 +25,7 @@ RUN touch $JBOSS_HOME/standalone/deployments/kie-server.war.dodeploy \
 	&& rm -rf $JBOSS_HOME/standalone/tmp \
 	&& rm -rf $JBOSS_HOME/standalone/data \
 	&& sed 's/-c standalone-full.xml/-c standalone-full.xml $EXTRA_OPTS/' -i start_kie-wb.sh \
-	&& sed 's/-c standalone-full.xml/-bmanagement 0.0.0.0 -c standalone-full.xml/' -i start_kie-wb.sh \
-	&& curl https://repository.jboss.org/org/jbpm/jbpm-event-emitters-elasticsearch/7.59.0.Final/jbpm-event-emitters-elasticsearch-7.59.0.Final.jar -o $JBOSS_HOME/standalone/deployments/kie-server.war/WEB-INF/lib/jbpm-event-emitters-elasticsearch-7.59.0.Final.jar
+	&& sed 's/-c standalone-full.xml/-bmanagement 0.0.0.0 -c standalone-full.xml/' -i start_kie-wb.sh
 
 COPY ./libs/* $JBOSS_HOME/standalone/deployments/kie-server.war/WEB-INF/lib/
 COPY ./conf/settings.xml /opt/jboss/repositories/kie

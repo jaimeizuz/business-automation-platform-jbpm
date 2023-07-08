@@ -1,4 +1,4 @@
-FROM jboss/business-central-workbench:7.59.0.Final
+FROM quay.io/kiegroup/business-central-workbench:7.64.0.Final
 
 COPY ./conf/configure-standalone.sh $JBOSS_HOME
 COPY ./conf/standalone-config.cli $JBOSS_HOME
@@ -32,7 +32,7 @@ RUN chmod 744 /opt/jboss/git-hooks/post-commit \
 
 USER jboss
 
-ENV JAVA_OPTS="$JAVA_OPTS -Xms1500m -Xmx1500m -XX:MetaspaceSize=512m -XX:MaxMetaspaceSize=768m -Djava.net.preferIPv4Stack=true -agentlib:jdwp=transport=dt_socket,address=8787,server=y,suspend=n"
+ENV JAVA_OPTS="$JAVA_OPTS -Xms1500m -Xmx1500m -XX:MetaspaceSize=512m -XX:MaxMetaspaceSize=768m -Djava.net.preferIPv4Stack=true"
 ####### RUNNING JBPM-WB ############
 #WORKDIR $JBOSS_HOME/bin/
 #CMD ["./start_jbpm-wb.sh"]
